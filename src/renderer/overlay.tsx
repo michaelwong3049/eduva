@@ -1,19 +1,70 @@
 import { createRoot } from 'react-dom/client';
-import { useState, useEffect, useRef, SyntheticEvent } from 'react';
-import type { Position, ScreenshotRegion } from 'global.d.ts';
+import { useState, useEffect, useRef } from 'react';
+import type { Position, ScreenshotRegion } from 'global';
 
 function ScreenshotOverlay() {
   const [screenshotSrc, setScreenshotSrc] = useState("");
   const [startingPosition, setStartingPosition] = useState<Position>();
-  const stageRef = useRef<HTMLDivElement>(null);
   const [rect, setRect] = useState<ScreenshotRegion>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const rectRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const cropImage = (screenshotSrc: string, cropRegion: ScreenshotRegion) => {
+    const canvas = canvasRef.current;
+    const img = imageRef.current;
+
+    if (!canvas || !img) {
+      console.error("no image found or no canvas found?");
+      return;
+    }
+
+    // Get the actual image dimensions (the captured screenshot)
+    const imgWidth = img.naturalWidth;
+    const imgHeight = img.naturalHeight;
+
+    // Get the overlay/stage dimensions (what the user sees)
+    const stageWidth = stageRef.current.clientWidth;
+    const stageHeight = stageRef.current.clientHeight;
+
+    // Calculate scale factors
+    const scaleX = imgWidth / stageWidth;
+    const scaleY = imgHeight / stageHeight;
+
+    // Scale the crop region to match actual image coordinates
+    const scaledLeft = cropRegion.left * scaleX;
+    const scaledTop = cropRegion.top * scaleY;
+    const scaledWidth = cropRegion.width * scaleX;
+    const scaledHeight = cropRegion.height * scaleY;
+
+    canvas.width = scaledWidth;
+    canvas.height = scaledHeight;
+
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(
+      img,
+      scaledLeft,      // Source x position (scaled)
+      scaledTop,       // Source y position (scaled)
+      scaledWidth,     // Source width (scaled)
+      scaledHeight,    // Source height (scaled)
+      0,               // Destination x
+      0,               // Destination y
+      scaledWidth,     // Destination width
+      scaledHeight     // Destination height
+    );
+
+    return canvas.toDataURL('image/png');
+  }
 
   const handleDown = async (e: React.MouseEvent<HTMLDivElement>) => {
-    if (screenshotSrc != "") {
+    if (screenshotSrc === "") {
       console.warn("handleDown(): there is no screenshot?");
       return;
     }
 
+    console.log("soemthing?");
     // const { x, y } = await window.nativeBits.getMousePosition();
     const bounds = stageRef.current.getBoundingClientRect();
     const startX = e.clientX - bounds.left;
@@ -22,7 +73,7 @@ function ScreenshotOverlay() {
   }
 
   const handleMove = async (e: React.MouseEvent<HTMLDivElement>) => {
-    if (screenshotSrc != "" || !startingPosition) {
+    if (screenshotSrc === "" || !startingPosition) {
       return;
     }
 
@@ -42,16 +93,44 @@ function ScreenshotOverlay() {
   const handleUp = async (e: React.MouseEvent<HTMLDivElement>) => {
     console.log("handleup")
 
-    if (screenshotSrc != "") {
+    if (screenshotSrc === "" || !rect) {
       return;
     }
+
+    // Ignore tiny selections (accidental clicks)
+    if (Math.abs(rect.width) < 5 || Math.abs(rect.height) < 5) {
+      setRect(null);
+      return;
+    }
+
+    try {
+      const croppedDataUrl = cropImage(screenshotSrc, rect);
+      window.nativeBits.sendToMain(croppedDataUrl);
+
+      // console.log('Cropped image:', croppedDataUrl);
+
+      // TODO: Do something with the cropped image
+      // e.g., send to main process, copy to clipboard, etc.
+
+    } catch (err) {
+      console.error('Crop failed:', err);
+    }
+
+    // Clear the selection rectangle
+    setRect(null);
+    setStartingPosition(undefined);
   }
 
   useEffect(() => {
     window.nativeBits.onScreenshotCaptured((dataURL) => {
+      console.log("screenshot being captured?")
       setScreenshotSrc(dataURL);
     })
   }, [])
+
+  useEffect(() => {
+    console.log("new screenshot", screenshotSrc);
+  }, [screenshotSrc])
 
   return (
     <div
@@ -70,6 +149,7 @@ function ScreenshotOverlay() {
     >
       {rect && (
         <div
+          ref={rectRef}
           style={{
             position: "absolute",
             left: rect.left,
@@ -82,15 +162,20 @@ function ScreenshotOverlay() {
           }}
         />
       )}
-
-      {/* <canvas ref={canvasRef} width="100%" height="100%" /> */}
-      {/* <img
+      <canvas 
+        ref={canvasRef}
         style={{
-          // border: "4px solid red",
+          border: "4px solid black"
+        }}
+      />
+      <img
+        ref={imageRef}
+        style={{ // border: "4px solid red",
+          display: "none",
           width: "100%",
           height: "100%"
         }}
-        src={screenshotSrc} /> */}
+        src={screenshotSrc}/>
     </div>
   )
 }

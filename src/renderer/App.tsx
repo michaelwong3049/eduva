@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Position } from 'global.d.ts';
+import type { Position } from 'global';
 
 function App() {
   const [screenshotSrc, setScreenshotSrc] = useState("");
@@ -31,7 +31,8 @@ function App() {
 
   useEffect(() => {
     window.nativeBits.onScreenshotCaptured((dataURL) => {
-      // setScreenshotSrc(dataURL);
+      console.log("App.tsx: ", dataURL);
+      setScreenshotSrc(dataURL);
     })
   }, [])
 

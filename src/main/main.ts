@@ -35,7 +35,14 @@ const createWindow = () => {
 
 // handles mouse position calculations for screenshot region
 app.whenReady().then(() => {
-  ipcMain.handle('mouse:getPosition', async () => {
+  ipcMain.on('screenshot:sendToMain', (event_, dataURL) => {
+    mainWindow?.webContents.send('screenshot:captured', dataURL);
+    screenshotOverlay?.close();
+    screenshotOverlay = null;
+    globalShortcut.unregister('Escape');
+  })
+
+  ipcMain.handle('mouse:getPosition', () => {
     const point = screen.getCursorScreenPoint();
     const display = screen.getDisplayNearestPoint(point);
 
@@ -49,7 +56,7 @@ app.whenReady().then(() => {
 // handle screenshot keybinding
 app.whenReady().then(() => {
   const ret = globalShortcut.register('CommandOrControl+X', async () => {
-    console.log('Screenshot command was pressed')
+    console.log('--- Screenshot command was pressed ---');
 
     if (screenshotOverlay) {
       console.warn('screenshot already happening, not starting another');
@@ -68,21 +75,27 @@ app.whenReady().then(() => {
     // this loads the overlay window
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
       screenshotOverlay.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/overlay.html`);
-      screenshotOverlay.webContents.openDevTools(); // Add this line
+      // screenshotOverlay.webContents.openDevTools({ mode: 'detach' }); // Add this line
     } else {
       screenshotOverlay.loadFile(
         path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/overlay.html`)
       );
     }
 
-    const sources = await desktopCapturer.getSources({
-      types: ['screen'],
-      thumbnailSize: { width: 1920, height: 1080 }
-    })
+    screenshotOverlay.webContents.once('did-finish-load', async () => {
+      try {
+        const sources = await desktopCapturer.getSources({
+          types: ['screen'],
+          thumbnailSize: { width: 1920, height: 1080 }
+        })
 
-    const dataURL = sources[0].thumbnail.toDataURL();
-    
-    mainWindow?.webContents.send('screenshot:captured', dataURL);
+        const dataURL = sources[0].thumbnail.toDataURL();
+
+        screenshotOverlay?.webContents.send('screenshot:captured', dataURL);
+      } catch (error) {
+        console.error(error);
+      }
+    })
   })  
 
   if (!ret) {

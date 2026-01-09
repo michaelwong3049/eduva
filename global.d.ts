@@ -5,6 +5,7 @@ declare global {
     nativeBits: {
       // captureScreenshot: (width: number, height: number) => Promise<string>;
       onScreenshotCaptured: (callback: (dataURL: string) => void) => void;
+      sendToMain: (dataURL: string) => void;
       // getMousePosition: (callback: (position: Position) => void) => void;
       getMousePosition: () => Promise<Position>;
     }
