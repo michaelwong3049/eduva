@@ -28,6 +28,7 @@ export function createScreenshotOverlayWindow(): BrowserWindow {
 
   overlay.setAlwaysOnTop(true, 'screen-saver');
   overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  overlay.setSimpleFullScreen(true);
   // overlay.setFullScreen(true);
   overlay.setSkipTaskbar(true);
   overlay.setMenuBarVisibility(true);

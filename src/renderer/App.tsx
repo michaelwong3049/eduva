@@ -52,8 +52,8 @@ function App() {
         onMouseDown={handleDown}
         onMouseUp={handleUp}
         style={{
-          border: '2px solid black',
-          padding: '2px'
+          // border: '2px solid black',
+          // padding: '2px'
         }}
       >
         <img src={screenshotSrc} />

@@ -14,8 +14,8 @@ app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal')
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 1920,
+    height: 1080,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -30,7 +30,7 @@ const createWindow = () => {
     );
   }
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 // handles mouse position calculations for screenshot region

@@ -64,7 +64,6 @@ function ScreenshotOverlay() {
       return;
     }
 
-    console.log("soemthing?");
     // const { x, y } = await window.nativeBits.getMousePosition();
     const bounds = stageRef.current.getBoundingClientRect();
     const startX = e.clientX - bounds.left;
@@ -91,7 +90,6 @@ function ScreenshotOverlay() {
   }
 
   const handleUp = async (e: React.MouseEvent<HTMLDivElement>) => {
-    console.log("handleup")
 
     if (screenshotSrc === "" || !rect) {
       return;
@@ -107,8 +105,6 @@ function ScreenshotOverlay() {
       const croppedDataUrl = cropImage(screenshotSrc, rect);
       window.nativeBits.sendToMain(croppedDataUrl);
 
-      // console.log('Cropped image:', croppedDataUrl);
-
       // TODO: Do something with the cropped image
       // e.g., send to main process, copy to clipboard, etc.
 
@@ -123,14 +119,9 @@ function ScreenshotOverlay() {
 
   useEffect(() => {
     window.nativeBits.onScreenshotCaptured((dataURL) => {
-      console.log("screenshot being captured?")
       setScreenshotSrc(dataURL);
     })
   }, [])
-
-  useEffect(() => {
-    console.log("new screenshot", screenshotSrc);
-  }, [screenshotSrc])
 
   return (
     <div
@@ -140,10 +131,10 @@ function ScreenshotOverlay() {
       onMouseMove={(e) => handleMove(e)}
       onMouseUp={(e) => handleUp(e)}
       style={{
+        position: "relative",
         width: "100%",
         height: "100%",
         overflow: "hidden",
-        border: '2px solid green',
         // backgroundColor: 'rgba(0, 0, 0, 0.3)', // semi-transparent overlay
       }}
     >
@@ -156,24 +147,30 @@ function ScreenshotOverlay() {
             top: rect.top,
             width: rect.width,
             height: rect.height,
-            border: "2px solid #111",
-            background: "rgba(0,0,0,0.08)",
+            // border: "2px solid #111",
+            background: "rgba(0,0,0,0.22)",
             boxSizing: "border-box",
+            zIndex: 10
           }}
         />
       )}
       <canvas 
         ref={canvasRef}
         style={{
-          border: "4px solid black"
+          display: 'none'
         }}
       />
       <img
         ref={imageRef}
         style={{ // border: "4px solid red",
-          display: "none",
+          // display: "none",
+          position: "absolute",
+          top: 0,
+          left: 0,
           width: "100%",
-          height: "100%"
+          height: "100%",
+          userSelect: "none",
+          pointerEvents: "none",
         }}
         src={screenshotSrc}/>
     </div>
