@@ -64,7 +64,6 @@ function ScreenshotOverlay() {
       return;
     }
 
-    // const { x, y } = await window.nativeBits.getMousePosition();
     const bounds = stageRef.current.getBoundingClientRect();
     const startX = e.clientX - bounds.left;
     const startY = e.clientY - bounds.top;
@@ -76,7 +75,6 @@ function ScreenshotOverlay() {
       return;
     }
 
-    // const { x, y } = await window.nativeBits.getMousePosition();
     const bounds = stageRef.current.getBoundingClientRect();
     const x = e.clientX - bounds.left;
     const y = e.clientY - bounds.top;
