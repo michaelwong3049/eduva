@@ -39,7 +39,9 @@
     "vite": "^5.4.21"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.0",
     "electron-squirrel-startup": "^1.0.1",
+    "nanoid": "^5.1.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   }

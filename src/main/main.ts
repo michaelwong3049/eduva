@@ -12,10 +12,10 @@ let screenshotOverlay: BrowserWindow | null;
 
 app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal')
 
-const createWindow = () => {
+const createWindow = (width: number, height: number) => {
   mainWindow = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: width,
+    height: height,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -30,7 +30,7 @@ const createWindow = () => {
     );
   }
 
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 // handles mouse position calculations for screenshot region
@@ -55,6 +55,10 @@ app.whenReady().then(() => {
 
 // handle screenshot keybinding
 app.whenReady().then(() => {
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.bounds;
+  const scaleFactor = display.scaleFactor;
+
   const ret = globalShortcut.register('CommandOrControl+X', async () => {
     console.log('--- Screenshot command was pressed ---');
 
@@ -84,9 +88,13 @@ app.whenReady().then(() => {
 
     screenshotOverlay.webContents.once('did-finish-load', async () => {
       try {
+        // Use scaled dimensions for full Retina/HiDPI resolution
         const sources = await desktopCapturer.getSources({
           types: ['screen'],
-          thumbnailSize: { width: 1920, height: 1080 }
+          thumbnailSize: { 
+            width: Math.floor(width * scaleFactor), 
+            height: Math.floor(height * scaleFactor) 
+          }
         })
 
         const dataURL = sources[0].thumbnail.toDataURL();
@@ -103,7 +111,7 @@ app.whenReady().then(() => {
   }
 
   console.log(globalShortcut.isRegistered('CommandOrControl+X'))
-  createWindow();
+  createWindow(width, height);
 })
 
 app.on('will-quit', () => {
@@ -119,10 +127,12 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
+  const { width, height } = screen.getPrimaryDisplay().bounds;
+
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createWindow(width, height);
   }
 });
 
