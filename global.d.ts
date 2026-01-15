@@ -3,12 +3,9 @@ export {};
 declare global {
   interface Window {
     nativeBits: {
-      // captureScreenshot: (width: number, height: number) => Promise<string>;
       onScreenshotCaptured: (callback: (dataURL: string) => void) => void;
-      sendToMain: (dataURL: string) => void;
-      // getMousePosition: (callback: (position: Position) => void) => void;
+      sendToWhitebaord: (dataURL: string) => void;
       getMousePosition: () => Promise<Position>;
-      closeWhiteboardOverlay: () => void;
     }
   }
 }
