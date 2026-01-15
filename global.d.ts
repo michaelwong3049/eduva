@@ -8,6 +8,7 @@ declare global {
       sendToMain: (dataURL: string) => void;
       // getMousePosition: (callback: (position: Position) => void) => void;
       getMousePosition: () => Promise<Position>;
+      closeWhiteboardOverlay: () => void;
     }
   }
 }

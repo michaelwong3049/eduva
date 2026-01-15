@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('nativeBits', {
   sendToMain: (dataURL: string) => ipcRenderer.send('screenshot:sendToMain', dataURL),
   getMousePosition: () => ipcRenderer.invoke('mouse:getPosition').then((position) => {
     return position;
-  })
+  }),
+  closeWhiteboardOverlay: () => ipcRenderer.send('whiteboard-overlay:close')
 })

@@ -1,5 +1,5 @@
 import { screen, app, BrowserWindow, globalShortcut, desktopCapturer, ipcMain, session } from 'electron';
-import { createScreenshotOverlayWindow } from './shortcuts/screenshot';
+import { createScreenshotOverlayWindow, createOpenWhiteboardButtonOverlay } from '../lib';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
@@ -9,6 +9,7 @@ if (started) {
 
 let mainWindow: BrowserWindow | null;
 let screenshotOverlay: BrowserWindow | null;
+let openWhiteboardOverlay: BrowserWindow | null;
 
 app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal')
 
@@ -36,20 +37,31 @@ const createWindow = (width: number, height: number) => {
 // handles mouse position calculations for screenshot region
 app.whenReady().then(() => {
   ipcMain.on('screenshot:sendToMain', (event_, dataURL) => {
-    mainWindow?.webContents.send('screenshot:captured', dataURL);
     screenshotOverlay?.close();
+    
     screenshotOverlay = null;
     globalShortcut.unregister('Escape');
+
+    console.log("creating whiteboard butotn overlay");
+
+    openWhiteboardOverlay = createOpenWhiteboardButtonOverlay();
+
+    // // this loads the overlay window
+    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+      openWhiteboardOverlay.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/open-whiteboard.html`);
+      // screenshotOverlay.webContents.openDevTools({ mode: 'detach' }); // Add this line
+    } else {
+      openWhiteboardOverlay.loadFile(
+        path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/open-whiteboard.html`)
+      );
+    }
+
+    // openWhiteboardOverlay.webContents.openDevTools();
   })
 
-  ipcMain.handle('mouse:getPosition', () => {
-    const point = screen.getCursorScreenPoint();
-    const display = screen.getDisplayNearestPoint(point);
-
-    return {
-      x: (point.x - display.bounds.x) * display.scaleFactor,
-      y: (point.y - display.bounds.y) * display.scaleFactor
-    }
+  ipcMain.on('whiteboard-overlay:close', () => {
+    openWhiteboardOverlay?.close();
+    openWhiteboardOverlay = null;
   })
 })
 
