@@ -101,7 +101,7 @@ function ScreenshotOverlay() {
 
     try {
       const croppedDataUrl = cropImage(screenshotSrc, rect);
-      window.nativeBits.sendToMain(croppedDataUrl);
+      window.nativeBits.sendToWhiteboard(croppedDataUrl);
 
       // TODO: Do something with the cropped image
       // e.g., send to main process, copy to clipboard, etc.
