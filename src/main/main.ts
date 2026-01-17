@@ -1,5 +1,5 @@
 import { screen, app, BrowserWindow, globalShortcut, desktopCapturer, ipcMain, session } from 'electron';
-import { createMainWindow, createScreenshotOverlayWindow, createButtonNotification, createWhiteboardOverlay } from './windows/createWindow';
+import { createMainWindow, createScreenshotOverlayWindow, createButtonNotification, createWhiteboardOverlay } from './createWindow';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
@@ -71,6 +71,11 @@ app.whenReady().then(() => {
     screenshotOverlay?.close();
     screenshotOverlay = null;
     globalShortcut.unregister('Escape');
+    
+    if (whiteboardOverlay) {
+      whiteboardOverlay?.close();
+      whiteboardOverlay = null;
+    }
 
     buttonNotification = createButtonNotification();
     whiteboardOverlay = createWhiteboardOverlay();
