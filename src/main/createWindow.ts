@@ -1,3 +1,4 @@
+
 import { BrowserWindow, screen } from 'electron';
 import path from 'node:path';
 
