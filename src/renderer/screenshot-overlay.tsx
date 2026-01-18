@@ -145,7 +145,6 @@ function ScreenshotOverlay() {
             top: rect.top,
             width: rect.width,
             height: rect.height,
-            // border: "2px solid #111",
             background: "rgba(0,0,0,0.22)",
             boxSizing: "border-box",
             zIndex: 10

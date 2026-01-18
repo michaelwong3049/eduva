@@ -4,6 +4,7 @@ import { getImageDimensions } from '../utils';
 
 import { nanoid } from 'nanoid';
 
+import Chatbox from './components/chatbox';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/dist/types/excalidraw/types';
 import '@excalidraw/excalidraw/index.css';
@@ -117,14 +118,19 @@ export default function WhiteboardOverlay() {
   return (
       <div 
         style={{
-          border: "2px solid black",
-          borderRadius: "15px",
-          width: "90%",
-          height: "90%",
-          overflow: "hidden",
+          display: 'flex',
+          position: 'relative',
+          border: '2px solid black',
+          borderRadius: '15px',
+          width: '90%',
+          height: '90%',
+          overflow: 'hidden'
         }}
       >
-        <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+        </div>
+        <Chatbox />
       </div>
   )
 }

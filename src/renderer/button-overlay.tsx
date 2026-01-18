@@ -57,7 +57,6 @@ export default function WhiteboardButtonOverlay() {
             : "slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards"
         }}
       >
-        Press ⌘ + ⌥ + W to open whiteboard!
       </div>
     </>
   )
