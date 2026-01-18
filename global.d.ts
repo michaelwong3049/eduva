@@ -6,6 +6,7 @@ declare global {
       onScreenshotCaptured: (callback: (dataURL: string) => void) => void;
       sendToWhitebaord: (dataURL: string) => void;
       getMousePosition: () => Promise<Position>;
+      closeWhiteboardOverlay: () => void;
     }
   }
 }
