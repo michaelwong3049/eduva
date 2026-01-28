@@ -1,7 +1,11 @@
 import { screen, app, BrowserWindow, globalShortcut, desktopCapturer, ipcMain, session } from 'electron';
 import { createMainWindow, createScreenshotOverlayWindow, createButtonNotification, createWhiteboardOverlay } from './createWindow';
+
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import "dotenv/config";
+
+import { MCPClient } from "../mcp/client";
 
 if (started) {
   app.quit();
@@ -11,11 +15,12 @@ let mainWindow: BrowserWindow | null;
 let screenshotOverlay: BrowserWindow | null;
 let buttonNotification: BrowserWindow | null;
 let whiteboardOverlay: BrowserWindow | null;
+let mcpClient: MCPClient | null = null;
 
 app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal')
 
 // handle screenshot keybinding
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.bounds;
   const scaleFactor = display.scaleFactor;
@@ -71,7 +76,7 @@ app.whenReady().then(() => {
     screenshotOverlay?.close();
     screenshotOverlay = null;
     globalShortcut.unregister('Escape');
-    
+
     if (whiteboardOverlay) {
       whiteboardOverlay?.close();
       whiteboardOverlay = null;
@@ -79,7 +84,7 @@ app.whenReady().then(() => {
 
     buttonNotification = createButtonNotification();
     whiteboardOverlay = createWhiteboardOverlay();
-    
+
     whiteboardOverlay?.webContents.once('did-finish-load', () => {
       console.log("finished?");
       whiteboardOverlay?.webContents.send('screenshot:captured', dataURL);
@@ -96,6 +101,30 @@ app.whenReady().then(() => {
   })
 })
 
+// handles adding circle elements to the whiteboard
+app.whenReady().then(() => {
+  ipcMain.on('whiteboard:addCircle', (_event, circle) => {
+    if (whiteboardOverlay) {
+      whiteboardOverlay.webContents.send('whiteboard:addCircle', circle);
+    } else {
+      console.warn('Whiteboard overlay not open, cannot add circle');
+    }
+  })
+})
+
+app.whenReady().then(async () => {
+  // Initialize MCP first
+  mcpClient = new MCPClient();
+  try {
+    await mcpClient.connectToServer('./dist/mcp/server.js');
+    
+    ipcMain.handle('mcp:query', async (_event, query) => {
+      return await mcpClient.processQuery(query);
+    })
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+});
 
 app.on('will-quit', () => {
   globalShortcut.unregister('CommandOrControl+X')

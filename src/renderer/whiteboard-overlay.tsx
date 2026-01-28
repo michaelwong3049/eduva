@@ -10,8 +10,9 @@ import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/dist/types/excal
 import '@excalidraw/excalidraw/index.css';
 import { generateIdFromFile } from '@excalidraw/excalidraw/dist/types/excalidraw/data/blob';
 
-import type { ExcalidrawImageElement } from '@excalidraw/excalidraw/dist/types/excalidraw/element/types';
+import type { ExcalidrawEllipseElement, ExcalidrawImageElement } from '@excalidraw/excalidraw/dist/types/excalidraw/element/types';
 import type { DataURL } from '@excalidraw/excalidraw/dist/types/excalidraw/types';
+import { ExcalidrawCircleElement } from 'src/types';
 
 export default function WhiteboardOverlay() {
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
@@ -109,6 +110,48 @@ export default function WhiteboardOverlay() {
     window.nativeBits.onScreenshotCaptured((dataURL) => {
       setScreenshotSrc(dataURL);
     })
+  }, [])
+
+  useEffect(() => {
+    return window.nativeBits.onAddCircle((circle: ExcalidrawCircleElement) => {
+      if (!excalidrawAPI) {
+        // console.error("Cannot add circle: excalidrawAPI not ready");
+        throw new Error("Cannot add circle: excalidrawAPI not ready");
+      }
+
+      // Create a full Excalidraw element from the circle data
+      const circleElement: ExcalidrawEllipseElement = {
+        ...circle,
+        index: null,
+        groupIds: [],
+        frameId: null,
+        seed: Math.floor(Math.random() * 2 ** 31),
+        version: 1,
+        versionNonce: Math.floor(Math.random() * 2 ** 31),
+        isDeleted: false,
+        boundElements: null,
+        updated: Date.now(),
+        link: null,
+        locked: false,
+      };
+
+      const currentElements = excalidrawAPI.getSceneElements();
+      try {
+        excalidrawAPI.updateScene({
+          elements: [...currentElements, circleElement]
+        });
+      } catch (error) {
+        console.error("Error updating scnee: ", error);
+      }
+
+      console.log("Added circle to whiteboard:", circleElement);
+    });
+  }, [excalidrawAPI])
+
+  useEffect(() => { 
+    if (excalidrawAPI) {
+      console.log("scene elements: ", excalidrawAPI.getSceneElements());
+    }
   }, [])
 
   useEffect(() => {

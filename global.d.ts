@@ -1,12 +1,18 @@
+import type { ExcalidrawCircleElement } from './src/types';
+
 export {};
 
 declare global {
   interface Window {
     nativeBits: {
       onScreenshotCaptured: (callback: (dataURL: string) => void) => void;
-      sendToWhitebaord: (dataURL: string) => void;
+      sendToWhiteboard: (dataURL: string) => void;
       getMousePosition: () => Promise<Position>;
       closeWhiteboardOverlay: () => void;
+      onGeminiRequest: (callback: (dataURL: string) => void) => void;
+      addCircleToWhiteboard: (circle: ExcalidrawCircleElement) => void;
+      requestClaude: (query: string) => Promise<ExcalidrawCircleElement>;
+      onAddCircle: (callback: (circle: ExcalidrawCircleElement) => void) => void;
     }
   }
 }
