@@ -101,13 +101,13 @@ app.whenReady().then(() => {
   })
 })
 
-// handles adding circle elements to the whiteboard
+// handles adding shape elements to the whiteboard
 app.whenReady().then(() => {
-  ipcMain.on('whiteboard:addCircle', (_event, circle) => {
+  ipcMain.on('whiteboard:addShape', (_event, shape) => {
     if (whiteboardOverlay) {
-      whiteboardOverlay.webContents.send('whiteboard:addCircle', circle);
+      whiteboardOverlay.webContents.send('whiteboard:addShape', shape);
     } else {
-      console.warn('Whiteboard overlay not open, cannot add circle');
+      console.warn('Whiteboard overlay not open, cannot add shape');
     }
   })
 })

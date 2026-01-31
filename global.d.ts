@@ -1,4 +1,4 @@
-import type { ExcalidrawCircleElement } from './src/types';
+import type { ExcalidrawShapeElement } from './src/types';
 
 export {};
 
@@ -10,9 +10,9 @@ declare global {
       getMousePosition: () => Promise<Position>;
       closeWhiteboardOverlay: () => void;
       onGeminiRequest: (callback: (dataURL: string) => void) => void;
-      addCircleToWhiteboard: (circle: ExcalidrawCircleElement) => void;
-      requestClaude: (query: string) => Promise<ExcalidrawCircleElement>;
-      onAddCircle: (callback: (circle: ExcalidrawCircleElement) => void) => void;
+      addShapeToWhiteboard: (shape: ExcalidrawShapeElement) => void;
+      requestClaude: (query: string) => Promise<ExcalidrawShapeElement>;
+      onAddShape: (callback: (shape: ExcalidrawShapeElement) => void) => void;
     }
   }
 }

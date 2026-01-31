@@ -8,8 +8,6 @@ import {
 } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
 import Anthropic from "@anthropic-ai/sdk";
 
-import { ExcalidrawCircleElement } from "src/types";
-
 import "dotenv/config";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -92,6 +90,15 @@ export class MCPClient {
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1000,
       messages: this.messages,
+      system: `You are a drawing assistant that creates shapes on an Excalidraw whiteboard.
+      When the user asks you to draw a shape, use the create_excalidraw_shape tool.
+
+      Available shape types:
+      - "ellipse" - for circles and ovals
+      - "rectangle" - for squares and rectangles  
+      - "diamond" - for diamond/rhombus shapes
+
+      Choose the appropriate type based on what the user asks for. Position shapes at reasonable coordinates (x: 100-500, y: 100-400) with appropriate dimensions.`,
       tools: this.tools,
     });
 
@@ -110,8 +117,8 @@ export class MCPClient {
         console.log("result: ", result.content);
 
         this.messages.push({
-          role: "user",
-          content: result.content as string,
+          role: "assistant",
+          content: JSON.stringify(result.content)
         });
 
         console.log("--- structuredContent ---");
@@ -121,25 +128,6 @@ export class MCPClient {
         return result.structuredContent;
       }
     }
-    // const exampleCircle: ExcalidrawCircleElement = {
-    //   type: "ellipse",
-    //   id: "abc123xyz",
-    //   x: 100,
-    //   y: 150,
-    //   width: 200,
-    //   height: 200,
-    //   angle: 0,
-    //   strokeColor: "#000000",
-    //   backgroundColor: "#ffffff",
-    //   fillStyle: "solid",
-    //   strokeWidth: 2,
-    //   strokeStyle: "solid",
-    //   roughness: 1,
-    //   opacity: 100,
-    //   roundness: { type: 2 }
-   // };
-    //
-    // return exampleCircle;
   }
 
   async chatLoop() {

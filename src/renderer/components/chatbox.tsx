@@ -10,12 +10,13 @@ export default function Chatbox() {
 
   useEffect(() => {
     if (sendMessage) {
-      console.log("sendMessage is TRUE...");
+      console.log("sendMessage is TRUE... ", message);
       (async () => {
-        const circle = await window.nativeBits.requestClaude(message);
+        const shape = await window.nativeBits.requestClaude(message);
         console.log("sending to whiteboard...");
-        window.nativeBits.addCircleToWhiteboard(circle);
+        window.nativeBits.addShapeToWhiteboard(shape);
       })()
+      setSendMessage(false);
     }
   }, [sendMessage])
 
@@ -47,7 +48,7 @@ export default function Chatbox() {
             height: "48px"
           }}
         />
-        <IconButton onClick={() => setSendMessage(!sendMessage)} color="primary">
+        <IconButton onClick={() => setSendMessage(true)} color="primary">
           <SendIcon />
         </IconButton>
       </div>

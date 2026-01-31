@@ -2,30 +2,27 @@ import { server } from './server';
 import { z } from "zod";
 
 import {
-  ExcalidrawCircleInputSchema,
-  ExcalidrawCircleInputShape,
-  ExcalidrawCircleOutputSchema,
-  ExcalidrawCircleOutputShape,
+  ExcalidrawShapeInputFields,
+  ExcalidrawShapeInputSchema,
+  ExcalidrawShapeOutputFields
 } from "../types";
 
 import "dotenv/config";
 import { nanoid } from "nanoid";
 
-// const geminiApiKey = process.env.GEMINI_API_KEY;
-
-function createExcalidrawCircle() {
+function createExcalidrawShape() {
   server.registerTool(
-    "create_excalidraw_circle",
+    "create_excalidraw_shape",
     {
-      description: "Create an excalidraw circle element",
-      inputSchema: ExcalidrawCircleInputShape,
-      outputSchema: ExcalidrawCircleOutputShape,
+      description: "Create an excalidraw shape element",
+      inputSchema: ExcalidrawShapeInputFields,
+      outputSchema: ExcalidrawShapeOutputFields,
     },
-    (input: z.infer<typeof ExcalidrawCircleInputSchema>) => {
+    (input: z.infer<typeof ExcalidrawShapeInputSchema>) => {
       const shape_id = nanoid();
 
       const structuredContent = {
-        type: "ellipse" as const,
+        type: input.type,
         id: shape_id,
         x: input.x,
         y: input.y,
@@ -55,5 +52,5 @@ function createExcalidrawCircle() {
   )
 }
 export function registerTools() {
-  createExcalidrawCircle();
+  createExcalidrawShape();
 }

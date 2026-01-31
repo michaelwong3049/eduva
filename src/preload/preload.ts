@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-import type { ExcalidrawCircleElement } from '../types';
+import { ExcalidrawShapeElement } from 'src/types'; 
 
 contextBridge.exposeInMainWorld('nativeBits', {
   onScreenshotCaptured: (callback: (dataURL: string) => void) => {
@@ -15,19 +15,19 @@ contextBridge.exposeInMainWorld('nativeBits', {
       callback(message);
     })
   },
-  addCircleToWhiteboard: (circle: ExcalidrawCircleElement) => {
-    ipcRenderer.send('whiteboard:addCircle', circle);
+  addShapeToWhiteboard: (shape: ExcalidrawShapeElement) => {
+    ipcRenderer.send('whiteboard:addShape', shape);
   },
-  requestClaude: (query: string) => ipcRenderer.invoke('mcp:query', query).then((circle) => {
-    return circle;
+  requestClaude: (query: string) => ipcRenderer.invoke('mcp:query', query).then((shape) => {
+    return shape;
   }),
-  onAddCircle: (callback: (circle: ExcalidrawCircleElement) => void) => {
-    const handler = (_event: any, circle: ExcalidrawCircleElement) => callback(circle);
+  onAddShape: (callback: (shape: ExcalidrawShapeElement) => void) => {
+    const handler = (_event: any, shape: ExcalidrawShapeElement) => callback(shape);
 
-    ipcRenderer.on('whiteboard:addCircle', handler);
+    ipcRenderer.on('whiteboard:addShape', handler);
 
     return () => {
-      ipcRenderer.removeListener("whiteboard:addCircle", handler);
+      ipcRenderer.removeListener("whiteboard:addShape", handler);
     }
   }
 })
