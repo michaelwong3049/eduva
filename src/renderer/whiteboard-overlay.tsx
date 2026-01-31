@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { getImageDimensions } from '../utils';
 
 import { nanoid } from 'nanoid';
+import { z } from 'zod';
 
 import Chatbox from './components/chatbox';
 import { Excalidraw } from '@excalidraw/excalidraw';
@@ -10,8 +11,9 @@ import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/dist/types/excal
 import '@excalidraw/excalidraw/index.css';
 import { generateIdFromFile } from '@excalidraw/excalidraw/dist/types/excalidraw/data/blob';
 
-import type { ExcalidrawImageElement } from '@excalidraw/excalidraw/dist/types/excalidraw/element/types';
+import type { ExcalidrawDiamondElement, ExcalidrawEllipseElement, ExcalidrawImageElement, ExcalidrawRectangleElement, ExcalidrawSelectionElement } from '@excalidraw/excalidraw/dist/types/excalidraw/element/types';
 import type { DataURL } from '@excalidraw/excalidraw/dist/types/excalidraw/types';
+import { ExcalidrawShapeOutputFields, ExcalidrawShapeOutputSchema } from 'src/types';
 
 export default function WhiteboardOverlay() {
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
@@ -109,6 +111,48 @@ export default function WhiteboardOverlay() {
     window.nativeBits.onScreenshotCaptured((dataURL) => {
       setScreenshotSrc(dataURL);
     })
+  }, [])
+
+  useEffect(() => {
+    return window.nativeBits.onAddShape((element: z.infer<typeof ExcalidrawShapeOutputSchema>) => {
+      if (!excalidrawAPI) {
+        // console.error("Cannot add shape: excalidrawAPI not ready");
+        throw new Error("Cannot add shape: excalidrawAPI not ready");
+      }
+
+      // Create a full Excalidraw element from the shape data
+      const shape = {
+        ...element,
+        index: null,
+        groupIds: [],
+        frameId: null,
+        seed: Math.floor(Math.random() * 2 ** 31),
+        version: 1,
+        versionNonce: Math.floor(Math.random() * 2 ** 31),
+        isDeleted: false,
+        boundElements: null,
+        updated: Date.now(),
+        link: null,
+        locked: false,
+      } as ExcalidrawEllipseElement | ExcalidrawDiamondElement | ExcalidrawRectangleElement
+
+      const currentElements = excalidrawAPI.getSceneElements();
+      try {
+        excalidrawAPI.updateScene({
+          elements: [...currentElements, shape]
+        });
+      } catch (error) {
+        console.error("Error updating scnee: ", error);
+      }
+
+      console.log("Added shape to whiteboard:", element);
+    });
+  }, [excalidrawAPI])
+
+  useEffect(() => { 
+    if (excalidrawAPI) {
+      console.log("scene elements: ", excalidrawAPI.getSceneElements());
+    }
   }, [])
 
   useEffect(() => {

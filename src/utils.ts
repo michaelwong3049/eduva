@@ -6,3 +6,5 @@ export async function getImageDimensions(image: string): Promise<{ width: number
   imageBitmap.close?.();
   return size;
 }
+
+

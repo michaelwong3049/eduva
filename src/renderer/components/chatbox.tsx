@@ -1,10 +1,24 @@
 import { createRoot } from 'react-dom/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-import { TextField } from '@mui/material';
+import { IconButton, TextField } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 
 export default function Chatbox() {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string>("");
+  const [sendMessage, setSendMessage] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (sendMessage) {
+      console.log("sendMessage is TRUE... ", message);
+      (async () => {
+        const shape = await window.nativeBits.requestClaude(message);
+        console.log("sending to whiteboard...");
+        window.nativeBits.addShapeToWhiteboard(shape);
+      })()
+      setSendMessage(false);
+    }
+  }, [sendMessage])
 
   return (
     <div
@@ -34,6 +48,9 @@ export default function Chatbox() {
             height: "48px"
           }}
         />
+        <IconButton onClick={() => setSendMessage(true)} color="primary">
+          <SendIcon />
+        </IconButton>
       </div>
     </div>
   );

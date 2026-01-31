@@ -1,12 +1,18 @@
+import type { ExcalidrawShapeElement } from './src/types';
+
 export {};
 
 declare global {
   interface Window {
     nativeBits: {
       onScreenshotCaptured: (callback: (dataURL: string) => void) => void;
-      sendToWhitebaord: (dataURL: string) => void;
+      sendToWhiteboard: (dataURL: string) => void;
       getMousePosition: () => Promise<Position>;
       closeWhiteboardOverlay: () => void;
+      onGeminiRequest: (callback: (dataURL: string) => void) => void;
+      addShapeToWhiteboard: (shape: ExcalidrawShapeElement) => void;
+      requestClaude: (query: string) => Promise<ExcalidrawShapeElement>;
+      onAddShape: (callback: (shape: ExcalidrawShapeElement) => void) => void;
     }
   }
 }
