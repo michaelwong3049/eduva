@@ -51,6 +51,8 @@ function createExcalidrawShape() {
     }
   )
 }
+
 export function registerTools() {
   createExcalidrawShape();
 }
+

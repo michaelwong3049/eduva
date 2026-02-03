@@ -9,11 +9,10 @@ import Chatbox from './components/chatbox';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/dist/types/excalidraw/types';
 import '@excalidraw/excalidraw/index.css';
-import { generateIdFromFile } from '@excalidraw/excalidraw/dist/types/excalidraw/data/blob';
 
 import type { ExcalidrawDiamondElement, ExcalidrawEllipseElement, ExcalidrawImageElement, ExcalidrawRectangleElement, ExcalidrawSelectionElement } from '@excalidraw/excalidraw/dist/types/excalidraw/element/types';
-import type { DataURL } from '@excalidraw/excalidraw/dist/types/excalidraw/types';
-import { ExcalidrawShapeOutputFields, ExcalidrawShapeOutputSchema } from 'src/types';
+import { ExcalidrawShapeOutputSchema } from 'src/types';
+import { exportToBlob } from '@excalidraw/excalidraw';
 
 export default function WhiteboardOverlay() {
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
@@ -45,7 +44,7 @@ export default function WhiteboardOverlay() {
 
     const screenshotElement: ExcalidrawImageElement = {
       id: id,
-      index: null, // TOOD: probably worng, should use nextIndex?
+      index: null, // TOOD: probably wrong, should use nextIndex?
 
       // base _ExcalidrawElementBase
       x: 500,
@@ -96,6 +95,45 @@ export default function WhiteboardOverlay() {
 
     console.log(excalidrawAPI.getSceneElements());
   }
+
+  useEffect(() => {
+    return window.nativeBits.onRequestWhiteboardData(async () => {
+      if (!excalidrawAPI) {
+        console.error("no excalidrawAPI when requesting for screenshot");
+      }
+
+      try {
+        const blob = await exportToBlob({
+          elements: excalidrawAPI.getSceneElements(),
+          files: excalidrawAPI.getFiles(),
+          mimeType: 'image/png',
+        });
+
+        const elements = excalidrawAPI.getSceneElements();
+
+        // Convert blob to base64 data URL
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (reader.result instanceof ArrayBuffer) {
+            console.error("Error sending screenshot: reader.result is type ArrayBuffer");
+            return;
+          }
+
+          let result = reader.result;
+          result = result.replace(/^data:image\/\w+;base64,/, '');
+
+          window.nativeBits.sendWhiteboardDataResponse({
+            elements: elements,
+            screenshot: result as string
+          });
+        };
+        reader.readAsDataURL(blob);
+      } catch (error) {
+        console.error('Failed to export whiteboard:', error);
+        window.nativeBits.sendWhiteboardDataResponse(null);
+      }
+    })
+  }, [excalidrawAPI])
 
   useEffect(() => {
     if (!excalidrawAPI || !screenshotSrc) {

@@ -7,4 +7,7 @@ export async function getImageDimensions(image: string): Promise<{ width: number
   return size;
 }
 
+export async function convertWhiteboardToImage() {
+
+}
 

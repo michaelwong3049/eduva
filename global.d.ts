@@ -1,6 +1,5 @@
 import type { ExcalidrawShapeElement } from './src/types';
-
-export {};
+import { NonDeletedExcalidrawElement } from '@excalidraw/excalidraw/dist/types/excalidraw/element/types';
 
 declare global {
   interface Window {
@@ -10,11 +9,19 @@ declare global {
       getMousePosition: () => Promise<Position>;
       closeWhiteboardOverlay: () => void;
       onGeminiRequest: (callback: (dataURL: string) => void) => void;
+      addShaeeToWhiteboard: (shape: ExcalidrawShapeElement) => void;
+      requestClaude: (query: string, whiteboardData: WhiteboardData) => Promise<ExcalidrawShapeElement>;
+      onRequestWhiteboardData: (callback: () => void) => void;
+      sendWhiteboardDataResponse: (data: WhiteboardData | null) => void;
+      getWhiteboardData: () => Promise<WhiteboardData>;
       addShapeToWhiteboard: (shape: ExcalidrawShapeElement) => void;
-      requestClaude: (query: string) => Promise<ExcalidrawShapeElement>;
-      onAddShape: (callback: (shape: ExcalidrawShapeElement) => void) => void;
     }
   }
+}
+
+export type WhiteboardData = {
+  elements: readonly Ordered<NonDeletedExcalidrawElement>[];
+  screenshot: string;
 }
 
 export type Position = {

@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { WhiteboardData } from 'global';
 
 import { ExcalidrawShapeElement } from 'src/types'; 
 
@@ -18,8 +19,23 @@ contextBridge.exposeInMainWorld('nativeBits', {
   addShapeToWhiteboard: (shape: ExcalidrawShapeElement) => {
     ipcRenderer.send('whiteboard:addShape', shape);
   },
-  requestClaude: (query: string) => ipcRenderer.invoke('mcp:query', query).then((shape) => {
+  requestClaude: (query: string, whiteboardScreenshot: string) => ipcRenderer.invoke('mcp:query', query, whiteboardScreenshot).then((shape) => {
     return shape;
+  }),
+  onRequestWhiteboardData: (callback: () => void) => {
+    const handler = () => callback();
+
+    ipcRenderer.on("whiteboard:request-data", handler);
+
+    return () => {
+      ipcRenderer.removeListener("whiteboard:request-data", handler);
+    }
+  },
+  sendWhiteboardDataResponse: (data: WhiteboardData | null) => {
+    ipcRenderer.send("whiteboard:data-response", data);
+  },
+  getWhiteboardData: () => ipcRenderer.invoke("get-whiteboard-data").then((whiteboardData) => {
+    return whiteboardData;
   }),
   onAddShape: (callback: (shape: ExcalidrawShapeElement) => void) => {
     const handler = (_event: any, shape: ExcalidrawShapeElement) => callback(shape);

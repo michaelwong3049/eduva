@@ -117,13 +117,33 @@ app.whenReady().then(async () => {
   mcpClient = new MCPClient();
   try {
     await mcpClient.connectToServer('./dist/mcp/server.js');
-    
-    ipcMain.handle('mcp:query', async (_event, query) => {
-      return await mcpClient.processQuery(query);
+
+    ipcMain.handle('mcp:query', async (_event, query, whiteboardData) => {
+      return await mcpClient.processQuery(query, whiteboardData);
     })
   } catch (error) {
     console.error("Error: ", error);
-  }
+  } 
+})
+
+app.whenReady().then(async () => {
+  ipcMain.handle("get-whiteboard-data", () => {
+    if (!whiteboardOverlay) {
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      ipcMain.once("whiteboard:data-response", (_event, data) => {
+        console.log("whiteboard's data: ", data);
+        if (!data) {
+          console.error("no data receieved");
+        } 
+        return resolve(data);
+      })
+      
+      whiteboardOverlay.webContents.send("whiteboard:request-data");
+    })
+  })
 });
 
 app.on('will-quit', () => {

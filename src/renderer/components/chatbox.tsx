@@ -11,9 +11,15 @@ export default function Chatbox() {
   useEffect(() => {
     if (sendMessage) {
       console.log("sendMessage is TRUE... ", message);
+
       (async () => {
-        const shape = await window.nativeBits.requestClaude(message);
-        console.log("sending to whiteboard...");
+        // const whiteboardScreenshot = await window.nativeBits.getWhiteboardScreenshot();
+        const whiteboardData = await window.nativeBits.getWhiteboardData();
+
+        // console.log("screenshot data before claude: ", whiteboardScreenshot);
+        console.log("whiteboard data before claude: ", whiteboardData);
+
+        const shape = await window.nativeBits.requestClaude(message, whiteboardData);
         window.nativeBits.addShapeToWhiteboard(shape);
       })()
       setSendMessage(false);

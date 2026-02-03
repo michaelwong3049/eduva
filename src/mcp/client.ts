@@ -8,6 +8,8 @@ import {
 } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
 import Anthropic from "@anthropic-ai/sdk";
 
+import { WhiteboardData } from "global";
+
 import "dotenv/config";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -76,13 +78,31 @@ export class MCPClient {
 
   async processQuery(
     query: string,
+    whiteboardData?: WhiteboardData
   ) {
     console.log("processQuery() called:", query);
 
     this.messages.push(
       {
         role: "user",
-        content: query,
+        content: [
+          {
+            type: "text",
+            text: query
+          },
+          {
+            type: "text",
+            text: `<whiteboard_data>${JSON.stringify(whiteboardData.elements)}<whiteboard_data>`
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: 'image/png',
+              data: whiteboardData.screenshot
+            }
+          }
+        ]
       }
     );
 
